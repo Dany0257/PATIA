@@ -80,14 +80,47 @@ def is_solution(puzzle : State, moves : Solution) -> bool:
 
 def make_move(current_state : State, direction : Move, dimension : int) -> State | None:
     '''Move the blank tile in the puzzle'''
-
+    index_vide = current_state.index(0)
     if current_state:
-        
-        new_state = None
-        
-        # Todo: implement the move logic
-        
-        return new_state
+        ligne = index_vide // dimension
+        colonne = index_vide % dimension
+        if direction == UP:
+            #Si on est sur la ligne 0, on ne peut pas aller 'up'
+            if ligne == 0:
+                return None
+            else:
+                new_state = current_state.copy()
+                new_state[ligne * dimension + colonne] = new_state[(ligne - 1) * dimension + colonne]
+                new_state[(ligne - 1) * dimension + colonne] = 0
+                return new_state
+        elif direction == DOWN:
+            #Si on est sur la derniere ligne, on ne peut pas aller 'down'
+            
+            if ligne == dimension - 1:
+                return None
+            else:
+                new_state = current_state.copy()
+                new_state[ligne * dimension + colonne] = new_state[(ligne + 1) * dimension + colonne]
+                new_state[(ligne + 1) * dimension + colonne] = 0
+                return new_state
+        elif direction == LEFT:
+            #Si on est sur la colonne 0, on ne peut pas aller 'left'
+            if colonne == 0:
+                return None
+            else:
+                new_state = current_state.copy()
+                new_state[ligne * dimension + colonne] = new_state[ligne * dimension + colonne - 1]
+                new_state[ligne * dimension + colonne - 1] = 0
+                return new_state
+        elif direction == RIGHT:
+            #Si on est sur la derniere colonne, on ne peut pas aller 'right'
+            if colonne == dimension - 1:
+                return None
+            else:
+                new_state = current_state.copy()
+                new_state[ligne * dimension + colonne] = new_state[ligne * dimension + colonne + 1]
+                new_state[ligne * dimension + colonne + 1] = 0
+                return new_state
     else:
         return None
 

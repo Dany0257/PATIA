@@ -24,10 +24,33 @@ ASTAR = 'astar'
 IDDFS = 'iddfs'
 
 def solve_bfs(open : List[Node]) -> Solution:
-    '''Solve the puzzle using the BFS algorithm'''
-    
-    # Todo: implement BFS algorithm
-    pass
+    #Préparer les outils
+    visited = set()
+    dimension = int(math.sqrt(len(open[0].state)))
+    goal_state = create_goal(dimension)
+    moves_list = [UP, DOWN, LEFT, RIGHT]
+
+    visited.add(tuple(open[0].get_state()))
+
+    while open:
+        current_node = open.pop(0)
+        current_state = current_node.get_state()
+
+        
+        if is_goal(current_state, goal_state):
+            return current_node.get_path()
+
+        # Explorer les voisins
+        for child_state, move in get_children(current_state, moves_list, dimension):
+            # On vérifie si on a déjà vu ce puzzle
+            if tuple(child_state) not in visited:
+                visited.add(tuple(child_state))
+                
+                # On crée un nouveau Nœud qui pointe vers le parent actuel
+                new_node = Node(state=child_state, move=move, parent=current_node)
+                open.append(new_node)
+
+    return None
 
 
 def solve_dfs(open : List[Node]) -> Solution:
