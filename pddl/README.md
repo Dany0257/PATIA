@@ -2,7 +2,7 @@
 
 Ce dossier contient les modélisations en langage **PDDL** (Planning Domain Definition Language) que j'ai réalisées dans le cadre du cours PATIA 2026.
 
-## 📁 Contenu de mon TP (Conforme aux consignes)
+## Contenu de mon TP (Conforme aux consignes)
 
 Conformément aux instructions du rendu, j'ai fourni les éléments suivants :
 
@@ -16,7 +16,7 @@ Conformément aux instructions du rendu, j'ai fourni les éléments suivants :
 
 ---
 
-## 🚀 Utilisation avec PDDL4J
+## Utilisation avec PDDL4J
 
 J'ai mis à disposition un script utilitaire `pddl4j.sh` pour lancer facilement les planificateurs **HSP** (Heuristic Search Planner) ou **FF** (Fast Forward) inclus dans la bibliothèque `pddl4j-4.0.0.jar`.
 
@@ -34,7 +34,7 @@ chmod +x pddl4j.sh
 
 ---
 
-## 📚 Mes Exercices Complémentaires
+## Mes Exercices Complémentaires
 
 En plus des rendus obligatoires, j'ai intégré à ce dépôt d'autres modélisations PDDL que j'ai explorées durant le semestre :
 - `blocks/` : Le monde des blocs (blocksworld).
