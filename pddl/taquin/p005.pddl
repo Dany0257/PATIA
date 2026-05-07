@@ -1,18 +1,16 @@
-;; problem-taquin-3x3-ex5.pddl
-(define (problem taquin-3x3)
-  (:domain taquin-ff)
+(define (problem taquin-3x3-p005)
+  (:domain taquin)
   (:objects
-     blank tile1 tile2 tile3 tile4 tile5 tile6 tile7 tile8 - tile
-     p11 p12 p13 p21 p22 p23 p31 p32 p33         - position
+     blank tile1 tile2 tile3 tile4 tile5 tile6 tile7 tile8
+     p11 p12 p13 p21 p22 p23 p31 p32 p33
   )
   (:init
-     ;; nouvelle configuration : blank en p13
-     (at tile2  p11) (at tile1  p12) (at blank  p13)
-     (at tile4  p21) (at tile3  p22) (at tile5  p23)
-     (at tile6  p31) (at tile7  p32) (at tile8  p33)
+     (at tile2 p11) (at tile1 p12) (at blank p13)
+     (at tile4 p21) (at tile3 p22) (at tile5 p23)
+     (at tile6 p31) (at tile7 p32) (at tile8 p33)
      (empty p13)
 
-     ;; --- adjacences horizontales ---
+     ;; adjacences horizontales
      (adjacent p11 p12) (adjacent p12 p11)
      (adjacent p12 p13) (adjacent p13 p12)
      (adjacent p21 p22) (adjacent p22 p21)
@@ -20,7 +18,7 @@
      (adjacent p31 p32) (adjacent p32 p31)
      (adjacent p32 p33) (adjacent p33 p32)
 
-     ;; --- adjacences verticales ---
+     ;; adjacences verticales
      (adjacent p11 p21) (adjacent p21 p11)
      (adjacent p12 p22) (adjacent p22 p12)
      (adjacent p13 p23) (adjacent p23 p13)
