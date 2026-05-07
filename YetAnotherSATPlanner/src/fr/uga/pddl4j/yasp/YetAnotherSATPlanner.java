@@ -33,7 +33,8 @@ import java.util.stream.Collectors;
 public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
 
     /**
-     * The main method the class. The first argument must be the path to the PDDL domain description and the second
+     * The main method the class. The first argument must be the path to the PDDL
+     * domain description and the second
      * argument the path to the PDDL problem description.
      *
      * @param args the command line arguments.
@@ -53,7 +54,8 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
      * Instantiates the planning problem from a parsed problem.
      *
      * @param problem the problem to instantiate.
-     * @return the instantiated planning problem or null if the problem cannot be instantiated.
+     * @return the instantiated planning problem or null if the problem cannot be
+     *         instantiated.
      */
     @Override
     public Problem instantiate(DefaultParsedProblem problem) {
@@ -101,12 +103,36 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
             boolean doSearch = true;
 
             while (doSearch && !(steps > stepmax)) {
-                
-                // TO BE DONE!
+
+                try {
+                    for (List<Integer> clause : sat.currentDimacs) {
+                        int[] c = clause.stream().mapToInt(i -> i).toArray();
+                        solver.addClause(new VecInt(c));
+                    }
+
+                    int[] assumptions = sat.currentGoal.stream().mapToInt(i -> i).toArray();
+
+                    if (solver.isSatisfiable(new VecInt(assumptions))) {
+                        plan = sat.extractPlan(Arrays.stream(solver.model()).boxed().collect(Collectors.toList()),
+                                problem);
+                        doSearch = false;
+                    } else {
+                        sat.next();
+                        steps++;
+                    }
+                } catch (TimeoutException e) {
+                    System.out.println("SAT solver timeout.");
+                    doSearch = false;
+                } catch (ContradictionException e) {
+                    // Contradiction in clauses means inherently unsatisfiable for all lengths
+                    System.out.println("Unsatisfiable (ContradictionException).");
+                    doSearch = false;
+                }
             }
         }
         return plan;
     }
+
     public static void main(final String[] args) {
 
         // Checks the number of arguments from the command line
@@ -130,14 +156,14 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                     System.out.println(m.toString());
                 }
             } else {
-                
+
                 // Creates an instance of the SAT planner
                 final YetAnotherSATPlanner planner = new YetAnotherSATPlanner();
 
                 // Prints that the domain and the problem were successfully parsed
                 System.out.print("\nparsing domain file \"" + args[0] + "\" done successfully");
                 System.out.print("\nparsing problem file \"" + args[1] + "\" done successfully\n\n");
-                
+
                 // Create a problem
                 final Problem problem = planner.instantiate(parsedProblem);
 
@@ -146,14 +172,14 @@ public class YetAnotherSATPlanner extends AbstractStateSpacePlanner {
                     System.out.println("Goal can be simplified to FALSE. No search will solve it");
                     System.exit(0);
                 } else {
-                    
+
                     Plan plan = planner.solve(problem);
-                        
-                        if (plan != null) {
-                            System.out.println(problem.toString(plan));
-                        } else {
-                            System.out.println("No solution found!");
-                        }
+
+                    if (plan != null) {
+                        System.out.println(problem.toString(plan));
+                    } else {
+                        System.out.println("No solution found!");
+                    }
                 }
             }
             // This exception could happen if the domain or the problem does not exist

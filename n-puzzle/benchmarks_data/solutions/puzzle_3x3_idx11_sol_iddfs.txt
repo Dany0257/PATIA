@@ -1,0 +1,3 @@
+Algorithm: IDDFS
+Time: 0.0003228187561035156 seconds
+Solution: up right down left left up

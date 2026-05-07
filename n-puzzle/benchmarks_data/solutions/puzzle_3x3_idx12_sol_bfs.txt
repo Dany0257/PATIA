@@ -1,0 +1,3 @@
+Algorithm: BFS
+Time: 0.0001964569091796875 seconds
+Solution: up up left

@@ -1,0 +1,3 @@
+Algorithm: A*
+Time: 0.00013685226440429688 seconds
+Solution: left

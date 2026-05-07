@@ -1,6 +1,22 @@
 /bin/
 /target/
+
+# Eclipse
 /.project
 /.classpath
+/.settings/
+
+# IntelliJ IDEA
 /.idea/
+*.iml
+
+# VS Code
 /.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Compiled class files & logs
+*.class
+*.log

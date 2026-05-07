@@ -11,6 +11,70 @@ Tout le code principal se situe dans le package `sokoban` (`src/main/java/sokoba
 - `Agent.java` : Le "cerveau" exécuté tour à tour. Il identifie en une fraction de seconde la grille de départ grâce à une comparaison d'empreinte visuelle avec et applique la solution hors-ligne.
 - `SokobanMain.java` : L'orchestrateur global. Au tout premier lancement, il génère silencieusement le pipeline complet avant de charger l'interface visuelle.
 
+## Explication de l'implémentation
+
+### 1. Parser des fichiers problèmes JSON (`GenPDDL.java`)
+
+Les 30 niveaux du jeu sont stockés dans des fichiers JSON (`config/testXX.json`). Chaque fichier contient un champ `testIn` représentant la grille Sokoban en ASCII :
+- `#` = mur, `@` = joueur, `$` = caisse, `.` = cible, `+` = joueur sur cible, `*` = caisse sur cible, ` ` = case vide.
+
+La classe `GenPDDL` parse chaque fichier JSON avec la bibliothèque **Gson**, puis parcourt la grille caractère par caractère pour extraire :
+- Les **objets PDDL** (chaque case libre est un objet de type `place`, nommé `pX_Y`)
+- L'**état initial** : position du joueur (`playerIsAt`), des caisses (`boxIsAt`), cases vides (`isEmpty`)
+- Les **buts** : les caisses doivent être sur les cibles (`boxIsAt` sur chaque position cible)
+- Les **relations d'adjacence** : pour chaque paire de cases voisines, les prédicats `isLeft`, `isRight`, `isUp`, `isDown`
+- La **détection des deadlocks statiques** : une case dans un coin (deux murs adjacents) qui n'est pas une cible est marquée `(deadlock pX_Y)` pour empêcher d'y pousser une caisse
+
+Le résultat est un fichier PDDL problème (`generated_pddl/problem_XX.pddl`) conforme au domaine.
+
+### 2. Fichier domaine PDDL (`sokoban-domain.pddl`)
+
+Le domaine PDDL (`src/main/resources/sokoban-domain.pddl`) définit :
+
+- **Types** : `player`, `box`, `place`
+- **Prédicats** : `playerIsAt`, `boxIsAt`, `isEmpty`, `isRight/Left/Up/Down` (adjacence), `deadlock`
+- **8 actions** :
+  - **4 actions de déplacement** (`move-right/left/up/down`) : le joueur se déplace vers une case vide adjacente
+  - **4 actions de poussée** (`push-right/left/up/down`) : le joueur pousse une caisse vers une case vide adjacente, avec la **précondition `(not (deadlock ?bTo))`** pour éviter les angles morts
+
+L'utilisation du prédicat `deadlock` dans les préconditions des actions `push-*` est une optimisation qui permet de réduire considérablement l'espace de recherche en éliminant les états dont on sait qu'ils ne mèneront jamais à une solution.
+
+### 3. Planificateur intégré en Java (`GenPlan.java`)
+
+Le planificateur est intégré directement dans le code Java via la bibliothèque **PDDL4J** (version 4.0.0). La classe `GenPlan` :
+
+1. Instancie un **parser PDDL4J** qui charge le fichier domaine et chaque fichier problème
+2. Utilise le planificateur **HSP** (Heuristic Search Planner) avec l'heuristique **Fast-Forward** pour trouver un plan optimal
+3. Le timeout est fixé à **400 secondes** par niveau
+4. Pour chaque plan trouvé, les actions sont écrites séquentiellement dans `plans/plan_XX.txt`
+
+> **Note** : Aucun script bash externe n'est nécessaire. Le planificateur PDDL4J est appelé programmatiquement via son API Java, ce qui rend l'ensemble du pipeline autonome et portable.
+
+### 4. Conversion plan → solution exécutable (`GenJson.java`)
+
+Les plans PDDL bruts (ex: `push-right`, `move-down`) sont convertis en commandes directionnelles (`R`, `D`, `U`, `L`) compréhensibles par le moteur de jeu. La classe `GenJson` :
+- Parse chaque fichier plan avec une **regex** `(?:push|move)-(down|up|left|right)`
+- Extrait la direction de chaque action et la convertit en lettre
+- Sauvegarde le résultat dans `solutions_json/solution_XX.json` avec le format `{"level": X, "solution": "RRDLUU..."}`
+
+### 5. Agent d'exécution (`Agent.java`)
+
+L'`Agent.java` est le programme exécuté tour par tour par le moteur CodinGame. Il :
+1. **Lit l'état initial** envoyé par le moteur (dimensions, grille, positions)
+2. **Identifie le niveau** en comparant l'empreinte de la grille reçue avec celles des 30 fichiers JSON de `config/`
+3. **Charge la solution pré-calculée** depuis `solutions_json/solution_XX.json`
+4. **Envoie les mouvements** un par un au moteur de jeu
+
+### 6. Pipeline complet (`SokobanMain.java`)
+
+L'orchestrateur `SokobanMain` automatise tout le processus au premier lancement :
+
+```
+JSON (config/) → GenPDDL → PDDL (generated_pddl/) → GenPlan (HSP/PDDL4J) → plans/ → GenJson → solutions_json/ → Agent
+```
+
+Si le dossier `solutions_json/` n'existe pas ou est incomplet, le pipeline complet est relancé automatiquement (~2-3 min). Les exécutions suivantes sont instantanées.
+
 ## Comment lancer une partie
 
 ### 0. Prérequis : Installation de PDDL4J

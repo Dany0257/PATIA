@@ -1,0 +1,3 @@
+Algorithm: DFS
+Time: 0.9330627918243408 seconds
+Solution: left
